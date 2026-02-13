@@ -5,6 +5,9 @@ Here's our first attempt at using data to create a table:
 
 import streamlit as st
 import pandas as pd
+import BAse
+import basele
+import time as t
 
 # df = pd.DataFrame({
 #     'first column': [1, 2, 3, 4],
@@ -20,6 +23,9 @@ import pandas as pd
 # 'You selected: ', option
 
 # streamlit run teste.py
+def dataload():
+    df_base = st.file_uploader("Choose a file", type = 'xlsx')
+    return df_base
 
 Func = st.selectbox(
     "Qual funcionalidade?",
@@ -27,14 +33,12 @@ Func = st.selectbox(
 )
 
 if Func == "Gerar Documento":
-    gerencias = ["I", "II", "III", "IV"]
+    gerencias = ["I", "II"]
 
     # Categorias dependentes
     categorias = {
-        "I": ["Jud", "Cob"],
-        "II": ["Adm", "Fin"],
-        "III": ["Cont", "Fiscal"],
-        "IV": ["RH", "TI"]
+        "I": ["Jurídico", "Cobrança","Viagens"],
+        "II": ["Call Center", "BPO"],
     }
 
     # Select da Gerência
@@ -48,6 +52,7 @@ if Func == "Gerar Documento":
         "Qual Categoria?",
         categorias[gerencia_sel]
     )
+    'You selected: ', categoria_sel, 'oi'
 
 
 else:
@@ -55,9 +60,37 @@ else:
     "Quantos CNPJS?",
     ["1", "2+ CNJS"])
 
-    if Cnpj == 1:
+    if Cnpj == "1":
         x = st.text_input("CNPJ:")
-        buscacnpj(x)
-        Deseja exportar ou ver a planilha completa?
+        x = (
+                    x.replace(".", "")
+                        .replace("-", "")
+                        .replace("/", "")
+                        .strip()
+                        .zfill(14)
+                )
         
+        y = BAse.consultar_cnpj(x)
+        if(y==0):
+            'CNPJ invalido'
+        else:
+            'CNPJ na base'
+            df = pd.read_csv("foo.csv", index_col="cnpj", dtype={"cnpj": str})
+            df.loc[x]
+    else:
+        
+        df_base = dataload()
+        if df_base != None:
+            df_base = pd.read_excel(df_base, 
+                                engine="openpyxl",
+                                dtype={"cnpj": str})
+            df_base
+            for i in range(0, len(df_base.index)):
+                y = BAse.consultar_cnpj(df_base.loc[i, "cnpj"])
+                if(y==0):
+                    'CNPJ', df_base.loc[i, "cnpj"],'invalido'
+                    t.sleep(1)
+                else:
+                    'CNPJ na base'
+
 
