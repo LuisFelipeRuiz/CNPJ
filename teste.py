@@ -92,5 +92,14 @@ else:
                     t.sleep(1)
                 else:
                     'CNPJ na base'
+                
 
+
+            
+
+        
+
+
+
+        
 
