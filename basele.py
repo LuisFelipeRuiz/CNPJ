@@ -19,8 +19,9 @@ def formatar_cnpj(cnpj):
 def criar_master(df_base, tempo):
 
     meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
-    dia, mes, ano = tempo.split("/")
+    ano, mes, dia = tempo.split("-")
     tempo_ext = f"{dia} de {meses[int(mes)-1]} de {ano}"
+    tempo = f"{dia}/{mes}/{ano}"
     cnpj_lixo = []
 
     try:

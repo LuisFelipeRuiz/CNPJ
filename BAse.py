@@ -69,8 +69,13 @@ def consultar_cnpj(cnpj):
     if(len(cnpj)!=14):
         cnpj = cnpj.zfill(14)
 
-    url = f"https://brasilapi.com.br/api/cnpj/v1/{cnpj}"
+    if cnpj in df.index:
+        print(f'Já está na base: {cnpj}')
+        'CNPJ ', cnpj, " Já está na base"
+        return 1
+    
 
+    url = f"https://brasilapi.com.br/api/cnpj/v1/{cnpj}"
     tent = 0
 
     while tent<3:
@@ -95,25 +100,20 @@ def consultar_cnpj(cnpj):
         'CNPJ ', cnpj, 'invalido'
         return 0
 
-    if cnpj in df.index:
-        print(f'Já está na base: {cnpj}')
-        'CNPJ ', cnpj, " Já está na base"
-    else:
-        print("CNPJ encontrado:", dados.get("cnpj"))
-        df.loc[dados["cnpj"]] = [
-            dados.get("razao_social"),
-            transforma_de(transforma_sao(dados.get("municipio"))),
-            transforma_uf(dados.get("uf")),
-            transforma_de(dados.get("descricao_tipo_de_logradouro") + ' ' + dados.get("logradouro")),
-            "n°" + dados.get("numero"),
-            transforma_cep(dados.get("cep"))
-        ]
-        
-                                
+    
+    print("CNPJ encontrado:", dados.get("cnpj"))
+    df.loc[dados["cnpj"]] = [
+        dados.get("razao_social"),
+        transforma_de(transforma_sao(dados.get("municipio"))),
+        transforma_uf(dados.get("uf")),
+        transforma_de(dados.get("descricao_tipo_de_logradouro") + ' ' + dados.get("logradouro")),
+        "n°" + dados.get("numero"),
+        transforma_cep(dados.get("cep"))
+    ]
+    
+                            
 
     df.to_csv("foo.csv")
-
-        
 
 def exportar_cnpj(df_base):
 
@@ -150,6 +150,9 @@ def exportar_cnpj(df_base):
 
     df_novo.index.name = 'cnpj'
     df_novo.to_excel("CNPJs.xlsx")
+
+    return df_novo
+
 
 
 
