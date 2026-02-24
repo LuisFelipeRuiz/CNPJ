@@ -5,6 +5,7 @@ import basele
 import time as t
 from io import BytesIO
 from docx import Document
+import zipfile
 
 def dataload():
     df_base = st.file_uploader("Choose a file", type = 'xlsx')
@@ -74,9 +75,18 @@ def Documentos(doc):
         
         return None, None
 
+if "gerando" not in st.session_state:
+    st.session_state.gerando = False
 
+if "pronto" not in st.session_state:
+    st.session_state.pronto = False
+
+if "zip" not in st.session_state:
+    st.session_state.zip = None
+
+if "progresso" not in st.session_state:
+    st.session_state.progresso = 0
         
-            
 
 if 'logged' not in st.session_state:
     st.session_state.logged = False
@@ -137,23 +147,59 @@ else:
         )
 
         # Select dependente da Categoria
-        categoria_sel = st.selectbox(
-            "Qual Categoria?",
-            categorias[gerencia_sel]
-        )
-        documentos_sel = st.selectbox(
-            "Qual documento?",
-            documentos[categoria_sel])
+        col1,col2 = st.columns(2)
+        with col1: 
+            categoria_sel = st.selectbox(
+                "Qual Categoria?",
+                categorias[gerencia_sel]
+            )
+        
+        with col2:
+            documentos_sel = st.selectbox(
+                "Qual documento?",
+                documentos[categoria_sel])
+            
+        st.write(" ")
+            
         if documentos_sel == "Master Cível":
             doc = "MC"
             data, df_base = Documentos(doc) 
+            status = st.empty()
 
             if df_base is not None and data is not None:
-                gerar = st.button("Gerar documentos")
-                if gerar:
-                    datas = str(data)
-                    basele.criar_master(df_base, datas)
-                    st.write("docs gerados")
+
+                progresso_bar = st.progress(0)
+                texto = st.empty()
+
+                if not st.session_state.gerando and not st.session_state.pronto:
+                    gerar = st.button("Gerar documentos",
+                                      width="stretch")
+                    if gerar:
+
+                        st.session_state.gerando = True
+
+                        for progresso, zip_file in basele.criar_master(df_base, str(data)):
+
+                            progresso_bar.progress(progresso)
+                            texto.text(f"{int(progresso*100)}% concluído")
+
+                            if zip_file is not None:
+                                st.session_state.zip = zip_file
+                                st.session_state.pronto = True
+                                st.session_state.gerando = False
+                                st.rerun()
+
+                if st.session_state.pronto:
+
+                    st.download_button(
+                        label="Baixar Docs",
+                        data=st.session_state.zip,
+                        file_name="Documentos.zip",
+                        mime="application/zip",
+                        width='stretch',
+                        type='primary'
+                    )
+                    
             
 
     else:
